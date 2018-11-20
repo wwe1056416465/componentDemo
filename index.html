@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="./lib/bootstrap-3.3.7/dist/css/bootstrap.css">
+  <style>
+    h3{
+      margin: 0 auto;
+      width: 200px;
+      padding: 20px;
+      color: skyblue;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h3>写点什么吧</h3>
+    <comment-box @func="localStorageComment"></comment-box> 
+    <ul class="list-group">
+      <li class="list-group-item" v-for="(item,index) in list" :key="index">
+        <span class="badge">评论人: {{item.user}}</span>
+        {{item.content}}
+      </li>
+    </ul>
+
+  </div>
+  <!-- 组件模板中的html结构 -->
+  <template id="tem">
+    <div>
+
+      <div class="form-group">
+        <label for="">评论人: </label>
+        <input type="text" class="form-control" v-model="user">
+      </div>
+      <div class="form-group">
+        <label for="">评论内容: </label>
+        <textarea class="form-control" v-model="content"></textarea>
+      </div>
+
+      <div class="form-group">
+        <input type="button" value="提交评论" class="btn btn-primary" @click="addComment">
+
+      </div>
+    </div>
+  </template>
+
+  <script src="./lib/vue.js"></script>
+
+
+  <script>
+  // 组件模板对象,写在script标签中
+  var commentBox={
+    template:'#tem',
+    data(){
+      return{
+        user:'',
+        content:'',
+      }
+    },
+    methods:{
+      addComment(){
+        if(!this.user.trim()||!this.content.trim()){
+          alert('请留下您的大名或者评论')
+          return;
+        }
+          // 1 获取到当前的评论数据
+          // 2获取到本地存储中的评论数据,如果原来不存在本地存储则返回一个数组字符串
+          //3把最新的评论数据保存到本地存储中去
+          let comment={id:Date.now(),user:this.user,content:this.content};
+          let list= JSON.parse(localStorage.getItem('coms')||'[]');
+          list.unshift(comment)
+          localStorage.setItem('coms',JSON.stringify(list))
+          this.user=this.content='';
+          this.$emit('func')
+        }
+      }
+    }
+
+    let vm=new Vue({
+      el:"#app",
+      data:{
+        list:[
+
+        ]
+      },
+      created(){
+        // 数据加载完成阶段 调用获取本地存储的评论数据
+        this.localStorageComment()
+      },
+      methods:{
+        localStorageComment(){
+              // 获取本地存储中的数据
+              let list=JSON.parse(localStorage.getItem('coms')||'[]')
+              this.list=list
+            }
+          },
+          components:{
+            'comment-box':commentBox,
+          }
+        })
+      </script>
+    </body>
+    </html>
